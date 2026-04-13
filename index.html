@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+    <title>MAP KECAMATAN TOMBULU - Naomi Lovelista</title>
+    
+    <link rel="stylesheet" href="./index_files/leaflet.css">
+    <link rel="stylesheet" href="./index_files/qgis2web.css">
+    <link rel="stylesheet" href="./index_files/fontawesome-all.min.css">
+    
+    <style>
+        :root {
+            --pastel-green: #e1eedd;
+            --accent-green: #185039;
+            --soft-white: #f9fbf9;
+            --border-radius: 15px;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--pastel-green);
+            overflow: hidden;
+        }
+
+        /* Layout Container */
+        #main-container {
+            display: flex;
+            height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+            gap: 20px;
+        }
+
+        /* Sidebar Style */
+        #sidebar {
+            width: 350px;
+            background: var(--soft-white);
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            border: 2px solid #c9dfc4;
+            overflow-y: auto;
+        }
+
+        /* Map Container Style */
+        #map-wrapper {
+            flex-grow: 1;
+            position: relative;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            border: 5px solid white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Typography */
+        h1 {
+            color: var(--accent-green);
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--pastel-green);
+            padding-bottom: 10px;
+        }
+
+        .info-section {
+            margin-bottom: 20px;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: var(--accent-green);
+            display: block;
+            font-size: 0.8rem;
+            margin-top: 10px;
+        }
+
+        .info-value {
+            color: #333;
+            font-size: 0.95rem;
+        }
+
+        /* Village Tags */
+        .village-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .village-tag {
+            background: var(--pastel-green);
+            color: var(--accent-green);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border: 1px solid #c9dfc4;
+        }
+
+        /* Compass / Arah Angin */
+        #compass {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(255,255,255,0.8);
+            padding: 10px;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        /* Coordinate Display */
+        #coords {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: rgba(255,255,255,0.8);
+            padding: 5px 10px;
+            font-size: 0.75rem;
+            border-radius: 5px;
+            color: #444;
+        }
+    </style>
+</head>
+<body>
+
+<div id="main-container">
+    <div id="sidebar">
+        <h1>MAP KECAMATAN TOMBULU</h1>
+        <div class="subtitle">Sistem Informasi Geografis Maritim</div>
+
+        <div class="info-section">
+            <span class="info-label">IDENTITAS MAHASISWA</span>
+            <div class="info-value"><b>Nama:</b> Naomi Lovelista Wehantouw</div>
+            <div class="info-value"><b>NIM:</b> 241011060019</div>
+            <div class="info-value"><b>Kelas:</b> Sistem Informasi A 2024</div>
+        </div>
+
+        <div class="info-section">
+            <span class="info-label">DESKRIPSI WILAYAH</span>
+            <p style="font-size: 0.9rem; line-height: 1.4; color: #555;">
+                Peta ini menampilkan batas wilayah administratif Kecamatan Tombulu, Kabupaten Minahasa. Data divisualisasikan menggunakan layer satelit untuk akurasi topografi permukaan.
+            </p>
+        </div>
+
+        <div class="info-section">
+            <span class="info-label">DAFTAR DESA</span>
+            <div class="village-container">
+                <div class="village-tag">Kamangta</div>
+                <div class="village-tag">Sawangan</div>
+                <div class="village-tag">Tikela</div>
+                <div class="village-tag">Koka</div>
+                <div class="village-tag">Tombuluan</div>
+                <div class="village-tag">Kembes</div>
+                <div class="village-tag">Rumengkor</div>
+                <div class="village-tag">Suluan</div>
+            </div>
+        </div>
+        
+        <div style="margin-top: auto; font-size: 0.7rem; color: #999; text-align: center;">
+            &copy; 2026 Naomi Lovelista - GIS Project
+        </div>
+    </div>
+
+    <div id="map-wrapper">
+        <div id="compass" title="Arah Utara">
+            <i class="fas fa-compass fa-2x" style="color: var(--accent-green);"></i>
+        </div>
+        <div id="coords">Lat: 1.4130, Lon: 124.9016</div>
+        <div id="map"></div>
+    </div>
+</div>
+
+<script src="./index_files/qgis2web_expressions.js"></script>
+<script src="./index_files/leaflet.js"></script>
+<script src="./index_files/Autolinker.min.js"></script>
+<script src="./index_files/KECTOMBULU_2.js"></script>
+
+<script>
+    var map = L.map('map', {
+        zoomControl: true, 
+        maxZoom: 28, 
+        minZoom: 1
+    }).fitBounds([[1.3060, 124.7538], [1.5199, 125.0493]]);
+
+    // Background Layer Google Satellite (Sesuai Permintaan)
+    var layer_GoogleSatellite_1 = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+        opacity: 1.0,
+        attribution: 'Map data &copy;2015 Google',
+        minZoom: 1,
+        maxZoom: 28
+    });
+    map.addLayer(layer_GoogleSatellite_1);
+
+    // Style Area Hijau Pastel Transparan agar Satelit Terlihat
+    function style_KECTOMBULU_2_0() {
+        return {
+            color: '#185039',
+            weight: 2,
+            fillColor: '#e1eedd',
+            fillOpacity: 0.4, // Dibuat agak transparan agar satelit tetap kelihatan
+            interactive: true
+        }
+    }
+
+    // Load Data GeoJSON
+    var layer_KECTOMBULU_2 = new L.geoJson(json_KECTOMBULU_2, {
+        style: style_KECTOMBULU_2_0,
+        onEachFeature: function(feature, layer) {
+            var popupContent = '<div style="font-family: Arial; padding: 10px;">' +
+                               '<b>Kecamatan:</b> Tombulu<br>' +
+                               '<b>Nama Objek:</b> ' + (feature.properties['NAMOBJ'] || 'Data Desa') +
+                               '</div>';
+            layer.bindPopup(popupContent);
+        }
+    }).addTo(map);
+
+    // Update Koordinat saat mouse bergerak
+    map.on('mousemove', function(e) {
+        document.getElementById('coords').innerHTML = 
+            "Lat: " + e.latlng.lat.toFixed(4) + ", Lon: " + e.latlng.lng.toFixed(4);
+    });
+</script>
+
+</body>
+</html>
